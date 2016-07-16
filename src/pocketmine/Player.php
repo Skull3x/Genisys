@@ -3724,7 +3724,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}
 				
 				if($transaction->getSourceItem()->deepEquals($transaction->getTargetItem(), true, true, true)){ //No changes!
-					//No changes, just a local inventory update sent by the server
+					//No changes, just a local inventory update sent by the client
 					echo "ignoring slot change\n";
 					break;
 				}
