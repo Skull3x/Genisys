@@ -26,7 +26,8 @@ use pocketmine\item\Item;
 
 class SimpleTransactionQueue implements TransactionQueue{
 	
-	const ALLOWED_RETRIES = 20;
+	const ALLOWED_RETRIES = 2;
+	const MAX_QUEUE_LENGTH = 10;
 	
 	/** @var Player[] */
 	protected $player = null;
@@ -90,16 +91,21 @@ class SimpleTransactionQueue implements TransactionQueue{
 	 * Returns true if the addition was successful, false if not.
 	 */
 	public function addTransaction(Transaction $transaction){
-		$change = $transaction->getChange();
+		/*if($this->transactionQueue->count() > self::MAX_QUEUE_LENGTH){
+			//Max pending transactions already queued.
+			return false;
+		}*/
 		
+		$change = $transaction->getChange();
 		if(@$change["in"] instanceof Item or @$change["out"] instanceof Item){
 			$this->transactionQueue->enqueue($transaction);
 			$this->inventories[] = $transaction->getInventory();
 			$this->lastUpdate = microtime(true);
-			return true;
 		}else{
-			return false;
+			//Null change detected, nothing needs to be done
 		}
+		
+		return true;
 	}
 	
 	
@@ -131,8 +137,8 @@ class SimpleTransactionQueue implements TransactionQueue{
 		/*if($this->isExecuting()){
 			echo "execution already in progress\n";
 			return false;
-		}else*/if(microtime(true) - $this->lastUpdate < 0.5){
-			echo "last update time less than 10 ticks ago\n";
+		}else*/if(microtime(true) - $this->lastUpdate < 0.05){
+			//echo "last update time less than 10 ticks ago\n";
 			return false;
 		}
 		//echo "Starting queue execution\n";
@@ -142,12 +148,16 @@ class SimpleTransactionQueue implements TransactionQueue{
 		
 		$this->isExecuting = true;
 		
+		$failCount = $this->transactionsToRetry->count();
 		while(!$this->transactionsToRetry->isEmpty()){
 			//Some failed transactions are waiting from the previous execution to be retried
 			echo "adding a transaction to retry\n";
 			$this->transactionQueue->enqueue($this->transactionsToRetry->dequeue());
 		}
 		
+		if($this->transactionQueue->count() !== 0){
+			echo "Batch-handling ".$this->transactionQueue->count()." changes, with ".$failCount." retries.\n";
+		}
 		while(!$this->transactionQueue->isEmpty()){
 			$transaction = $this->transactionQueue->dequeue();
 			
@@ -159,7 +169,7 @@ class SimpleTransactionQueue implements TransactionQueue{
 			if($change["out"] instanceof Item){
 				if(($transaction->getInventory()->slotContains($transaction->getSlot(), $change["out"]) and $transaction->getInventory()->slotContains($transaction->getSlot(), $transaction->getSourceItem(), true)) or $this->player->isCreative()){
 					//Allow adding nonexistent items to the crafting inventory in creative.
-					echo "out transaction executing\n";
+					//echo "out transaction executing\n";
 
 					$this->player->getCraftingInventory()->addItem($change["out"]);
 					$transaction->getInventory()->setItem($transaction->getSlot(), $transaction->getTargetItem(), false);
@@ -185,7 +195,7 @@ class SimpleTransactionQueue implements TransactionQueue{
 			}
 			if($change["in"] instanceof Item){
 				if($this->player->getCraftingInventory()->contains($change["in"]) or $this->player->isCreative()){
-					echo "in transaction executing\n";
+					//echo "in transaction executing\n";
 					
 					$this->player->getCraftingInventory()->removeItem($change["in"]);
 					$transaction->getInventory()->setItem($transaction->getSlot(), $transaction->getTargetItem(), false);

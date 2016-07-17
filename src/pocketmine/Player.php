@@ -3666,7 +3666,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				if($packet->slot < 0){
 					break;
 				}
-				var_dump($packet);
+
 				if($packet->windowid === 0){ //Our inventory
 					echo "Transferring items in this inventory\n";
 					if($packet->slot >= $this->inventory->getSize()){
@@ -3725,7 +3725,6 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				
 				if($transaction->getSourceItem()->deepEquals($transaction->getTargetItem(), true, true, true)){ //No changes!
 					//No changes, just a local inventory update sent by the client
-					echo "ignoring slot change\n";
 					break;
 				}
 				
