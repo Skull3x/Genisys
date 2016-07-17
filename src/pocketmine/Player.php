@@ -3668,41 +3668,29 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				}
 
 				if($packet->windowid === 0){ //Our inventory
-					echo "Transferring items in this inventory\n";
 					if($packet->slot >= $this->inventory->getSize()){
-						
 						break;
 					}
-					/*if($this->isCreative()){
-						if(Item::getCreativeItemIndex($packet->item) !== -1){
-							//This is bad. This will be done in the BaseTransaction anyway, all this will do is cause more bugs.
-							//$this->inventory->setItem($packet->slot, $packet->item);
-							
-							
-							$this->inventory->setHotbarSlotIndex($packet->slot, $packet->slot); //links $hotbar[$packet->slot] to $slots[$packet->slot]
-						}
-					}*/
 					$transaction = new BaseTransaction($this->inventory, $packet->slot, $this->inventory->getItem($packet->slot), $packet->item);
 				}elseif($packet->windowid === ContainerSetContentPacket::SPECIAL_ARMOR){ //Our armor
-					echo "Changing armour slots\n";
-					
 					if($packet->slot >= 4){
 						break;
 					}
 
 					$transaction = new BaseTransaction($this->inventory, $packet->slot + $this->inventory->getSize(), $this->inventory->getArmorItem($packet->slot), $packet->item);
 				}elseif(isset($this->windowIndex[$packet->windowid])){ //Other type of inventory window
-					echo "Transfer for other inventory type\n";
-					
+				
+					//TODO: Make Anvils use the floating inventory. They do not currently function on Win10.
+				
 					$this->craftingType = 0;
 					$inv = $this->windowIndex[$packet->windowid];
 
 					/** @var $packet \pocketmine\network\protocol\ContainerSetSlotPacket */
 					if($inv instanceof EnchantInventory and $packet->item->hasEnchantments()){
 						$inv->onEnchant($this, $inv->getItem($packet->slot), $packet->item);
-					}
-
-					if($inv instanceof AnvilInventory){
+						
+					}elseif($inv instanceof AnvilInventory){
+						
 						if($packet->slot == 2){
 							if($packet->item->getId() != Item::AIR){
 								$this->anvilItem = $packet->item;
@@ -3723,18 +3711,12 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 					//$transaction = new BaseTransaction($this->inventory, $packet->slot, $this->inventory->getItem($packet->slot), $packet->item);
 				}
 				
-				if($transaction->getSourceItem()->deepEquals($transaction->getTargetItem(), true, true, true)){ //No changes!
-					//No changes, just a local inventory update sent by the client
-					break;
-				}
-				
 				if($this->transactionQueue === null){
 					$this->transactionQueue = new SimpleTransactionQueue($this);
 				}
 				
 				//echo "adding a transaction\n";
 				$this->transactionQueue->addTransaction($transaction);
-				echo "Added a transaction concerning slot number ".$packet->slot."\n";
 				/*if($this->currentTransaction === null){
 					echo "creating a new transaction group\n";
 					$this->currentTransaction = new OrderedTransactionGroup($this);
