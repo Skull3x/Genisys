@@ -142,7 +142,7 @@ class BaseTransaction implements Transaction{
 	 */
 	public function getChange(){
 		if($this->getTransactionType() === Transaction::TYPE_DROP_ITEM){
-			return ["in" => $this->targetItem,
+			return ["in" => $this->getTargetItem(),
 					"out" => null];
 		}
 		
@@ -151,7 +151,7 @@ class BaseTransaction implements Transaction{
 			return null;
 			
 		}elseif($this->sourceItem->deepEquals($this->targetItem)){ //Same item, change of count
-			$item = clone $this->sourceItem;
+			$item = $this->getSourceItem();
 			$countDiff = $this->targetItem->getCount() - $this->sourceItem->getCount();
 			$item->setCount(abs($countDiff));
 			
@@ -172,22 +172,22 @@ class BaseTransaction implements Transaction{
 			//Slot emptied
 			//return the item removed
 			return ["in" => null,
-					"out" => clone $this->sourceItem];
+					"out" => $this->getSourceItem()];
 			
 		}elseif($this->sourceItem->getId() === Item::AIR and $this->targetItem->getId() !== Item::AIR){
 			//Slot filled with a new item (item added)
-			return ["in" => clone $this->targetItem,
+			return ["in" => $this->getTargetItem(),
 					"out" => null];
 
-		}elseif(!$this->sourceItem->deepEquals($this->targetItem, false) and $this->sourceItem->canBeDamaged()){
+		}elseif($this->sourceItem->deepEquals($this->targetItem, false) and $this->sourceItem->canBeDamaged()){
 			//Tool/armour damage change, no inventory change to speak of (not really)
 			//BUG: Swapping two of the same tool with different damages will cause the second one to be lost. This will need fixing.
 			return null;
 			
 		}else{
 			//Some other slot change - an item swap or a non-tool/armour meta change
-			return ["in" => clone $this->targetItem, 
-					"out" => clone $this->sourceItem];
+			return ["in" => $this->getTargetItem(), 
+					"out" => $this->getSourceItem()];
 		}
 		//Don't remove this comment until you're sure there's nothing missing.
 	}
