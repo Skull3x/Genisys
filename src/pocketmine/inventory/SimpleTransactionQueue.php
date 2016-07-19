@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  _____   _____   __   _   _   _____  __    __  _____
  * /  ___| | ____| |  \ | | | | /  ___/ \ \  / / /  ___/
@@ -27,7 +27,7 @@ use pocketmine\item\Item;
 
 class SimpleTransactionQueue implements TransactionQueue{
 	
-	const DEFAULT_ALLOWED_RETRIES = 2;
+	const DEFAULT_ALLOWED_RETRIES = 20;
 	//const MAX_QUEUE_LENGTH = 3;
 	
 	/** @var Player[] */

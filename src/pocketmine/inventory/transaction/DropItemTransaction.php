@@ -43,7 +43,7 @@ class DropItemTransaction extends BaseTransaction{
 		$this->targetItem = $droppedItem;
 	}
 	
-	public function setSourceItem(){
+	public function setSourceItem(Item $item){
 		//Nothing to update
 	}
 	
