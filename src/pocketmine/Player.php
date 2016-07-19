@@ -95,7 +95,6 @@ use pocketmine\inventory\PlayerInventory;
 use pocketmine\inventory\ShapedRecipe;
 use pocketmine\inventory\ShapelessRecipe;
 //use pocketmine\inventory\SimpleTransactionGroup;
-use pocketmine\inventory\SimpleTransactionQueue;
 use pocketmine\inventory\Transaction;
 use pocketmine\item\FoodSource;
 use pocketmine\item\Item;
@@ -204,9 +203,6 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 	public $blocked = false;
 	public $achievements = [];
 	public $lastCorrect;
-	
-	/** @var SimpleTransactionQueue */
-	protected $transactionQueue = null;
 	
 	//protected $currentTransaction = null;
 	
@@ -2008,8 +2004,8 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 					$this->foodTick++;
 				}
 			}
-			if($this->transactionQueue !== null){
-				$this->transactionQueue->execute();
+			if($this->getTransactionQueue() !== null){
+				$this->getTransactionQueue()->execute();
 			}
 		}
 
@@ -3262,7 +3258,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 					break;
 				}
 				
-				$this->transactionQueue->addTransaction(new BaseTransaction(null, null, null, $packet->item, Transaction::TYPE_DROP_ITEM));
+				$this->getTransactionQueue()->addTransaction(new BaseTransaction(null, null, null, $packet->item, Transaction::TYPE_DROP_ITEM));
 				break;
 			case ProtocolInfo::TEXT_PACKET:
 				if($this->spawned === false or !$this->isAlive()){
@@ -3319,7 +3315,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 				//This should never be needed when these changes are stabilized
 				//Drop the contents of the floating inventory
 				foreach($this->getCraftingInventory()->getContents() as $item){
-					$this->transactionQueue->addTransaction(new BaseTransaction(null, null, null, $item, Transaction::TYPE_DROP_ITEM));
+					$this->getTransactionQueue()->addTransaction(new BaseTransaction(null, null, null, $item, Transaction::TYPE_DROP_ITEM));
 				}
 				break;
 
@@ -3610,12 +3606,8 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 					//$transaction = new BaseTransaction($this->inventory, $packet->slot, $this->inventory->getItem($packet->slot), $packet->item);
 				}
 				
-				if($this->transactionQueue === null){
-					$this->transactionQueue = new SimpleTransactionQueue($this);
-				}
-				
 				//echo "adding a transaction\n";
-				$this->transactionQueue->addTransaction($transaction);
+				$this->getTransactionQueue()->addTransaction($transaction);
 				/*if($this->currentTransaction === null){
 					echo "creating a new transaction group\n";
 					$this->currentTransaction = new OrderedTransactionGroup($this);
