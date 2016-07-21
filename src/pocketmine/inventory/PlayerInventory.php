@@ -26,6 +26,7 @@ use pocketmine\event\entity\EntityArmorChangeEvent;
 use pocketmine\event\entity\EntityInventoryChangeEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\item\Item;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\protocol\ContainerSetContentPacket;
 use pocketmine\network\protocol\ContainerSetSlotPacket;
 use pocketmine\network\protocol\MobArmorEquipmentPacket;
@@ -39,9 +40,13 @@ class PlayerInventory extends BaseInventory{
 	/** @var int[] */
 	protected $hotbar;
 
-	public function __construct(Human $player){
+	public function __construct(Human $player, ListTag $contents = null){
 		$this->hotbar = range(0, $this->getHotbarSize()-1, 1);
 		parent::__construct($player, InventoryType::get(InventoryType::PLAYER));
+		
+		if($contents instanceof ListTag){ //Saved data to be loaded into the inventory
+			//TODO
+		}
 	}
 
 	public function getSize(){

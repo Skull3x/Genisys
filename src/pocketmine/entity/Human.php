@@ -297,12 +297,13 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 
 			$this->uuid = UUID::fromData($this->getId(), $this->getSkinData(), $this->getNameTag());
 		}
-
+		
+		//TODO: Move this to PlayerInventory
 		if(isset($this->namedtag->Inventory) and $this->namedtag->Inventory instanceof ListTag){
 			foreach($this->namedtag->Inventory as $item){
-				if($item["Slot"] >= 0 and $item["Slot"] < $this->inventory->getHotbarSize()){ //Hotbar
+				/*if($item["Slot"] >= 0 and $item["Slot"] < $this->inventory->getHotbarSize()){ //Hotbar
 					$this->inventory->setHotbarSlotIndex($item["Slot"], isset($item["TrueSlot"]) ? $item["TrueSlot"] : -1);
-				}elseif($item["Slot"] >= 100 and $item["Slot"] < 104){ //Armor
+				}else*/if($item["Slot"] >= 100 and $item["Slot"] < 104){ //Armor
 					$this->inventory->setItem($this->inventory->getSize() + $item["Slot"] - 100, NBT::getItemHelper($item));
 				}else{
 					$this->inventory->setItem($item["Slot"] - $this->inventory->getHotbarSize(), NBT::getItemHelper($item));
